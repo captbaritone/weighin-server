@@ -1,10 +1,12 @@
 var express = require('express')
 var bodyParser = require('body-parser')
+var prettyBytes = require('pretty-bytes');
+var fs = require('fs');
+var marked = require('marked');
 
 var redis = require("redis");
 client = redis.createClient();
 
-var prettyBytes = require('pretty-bytes');
 
 var app = express()
 
@@ -28,6 +30,26 @@ function getKey(owner, repo, pull, bundle) {
     return segments.join(':');
 }
 
+function badgeUrl(size) {
+    var label = 'Size (.min.gz)';
+    var color = 'blue';
+    var slug = [label, size, color].join('-');
+    var urlSlug = encodeURI(slug);
+    return 'https://img.shields.io/badge/' + urlSlug + '.svg';
+}
+
+function sizeBadgeUrl(bytes) {
+    var size = prettyBytes(bytes * 1);
+    return badgeUrl(size);
+}
+
+
+app.get('/', function (req, res) {
+  var path = __dirname + '/index.md';
+  var file = fs.readFileSync(path, 'utf8');
+  res.send(marked(file.toString()));
+});
+
 // POST /api/users gets JSON bodies
 app.post('/api/v0/:owner/:repo/master', jsonParser, function (req, res) {
   var key = getKey(req.params.owner, req.params.repo);
@@ -35,6 +57,7 @@ app.post('/api/v0/:owner/:repo/master', jsonParser, function (req, res) {
   res.send('OK')
 })
 
+/*
 app.get('/api/v0/:owner/:repo/master', function (req, res) {
   var key = getKey(req.params.owner, req.params.repo);
   client.get(key, function(err, value) {
@@ -44,7 +67,21 @@ app.get('/api/v0/:owner/:repo/master', function (req, res) {
     res.send(body);
   });
 })
+*/
 
+app.get('/:owner/:repo/master.svg', function (req, res) {
+  var key = getKey(req.params.owner, req.params.repo);
+  client.get(key, function(err, value) {
+      // Temporarily redirect to Sheilds.io's badges
+      if (value) {
+          res.redirect(302, sizeBadgeUrl(value));
+      } else {
+          res.redirect(302, badgeUrl('Unknown'));
+      }
+  });
+})
+
+/*
 app.post('/api/v0/:owner/:repo/pull/:pull', jsonParser, function (req, res) {
   var key = getKey(req.params.owner, req.params.repo, req.params.pull);
   client.set(key, req.body.weight);
@@ -68,6 +105,7 @@ app.get('/api/v0/:owner/:repo/pull/:pull', function (req, res) {
     });
   });
 })
+*/
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
