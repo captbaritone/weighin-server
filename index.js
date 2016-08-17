@@ -74,6 +74,9 @@ app.get('/:owner/:repo/master.svg', function (req, res) {
   client.get(key, function(err, value) {
       // Temporarily redirect to Sheilds.io's badges
       if (value) {
+          // Instruct GitHub to not cache
+          // https://github.com/github/markup/issues/224
+          res.set('Cache-Control', 'no-cache');
           res.redirect(302, sizeBadgeUrl(value));
       } else {
           res.redirect(302, badgeUrl('Unknown'));
