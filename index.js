@@ -3,10 +3,10 @@ var bodyParser = require('body-parser')
 var prettyBytes = require('pretty-bytes');
 var fs = require('fs');
 var marked = require('marked');
+var comment = require('./github').comment;
 
 var redis = require("redis");
 client = redis.createClient();
-
 
 var app = express()
 
@@ -84,31 +84,32 @@ app.get('/:owner/:repo/master.svg', function (req, res) {
   });
 })
 
-/*
-app.post('/api/v0/:owner/:repo/pull/:pull', jsonParser, function (req, res) {
+app.post('/api/v0/:owner/:repo/pulls/:pull', jsonParser, function (req, res) {
   var key = getKey(req.params.owner, req.params.repo, req.params.pull);
   client.set(key, req.body.weight);
+  // TODO: enqueue this
+  report(req.params.owner, req.params.repo, req.params.pull);
   res.send('OK')
 })
 
-app.get('/api/v0/:owner/:repo/pull/:pull', function (req, res) {
-  var pullKey = getKey(req.params.owner, req.params.repo, req.params.pull);
-  var masterKey = getKey(req.params.owner, req.params.repo);
+function report(owner, repo, pull) {
+  var pullKey = getKey(owner, repo, pull);
+  var masterKey = getKey(owner, repo);
 
   client.get(pullKey, function(err, pullValue) {
     client.get(masterKey, function(err, masterValue) {
         var diff = pullValue - masterValue;
-        var body = {
-            master: masterValue,
-            pull: pullValue,
-            diff: diff,
-            prettyDiff: prettyBytes(diff)
-        };
-        res.send(body);
+        var message;
+        if (diff === 0) {
+            message = "The minified/gzipped build size is not changed by this pull request.";
+        } else {
+            var changed = diff > 0 ? 'increased' : 'decreased'
+             message = "The minified/gzipped build size " + changed + " by (__" + prettyBytes(diff) + "__) to __" + prettyBytes(pullValue * 1) + "__.";
+        }
+        comment(owner, repo, pull, message);
     });
   });
-})
-*/
+};
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
