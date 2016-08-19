@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "forever -w index.js"
+    "dev": "forever -w index.js",
+    "start": "forever start index.js"
   },
   "author": "",
   "license": "ISC",
