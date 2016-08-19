@@ -21,7 +21,7 @@ Then add to your `package.json`:
 
     {
         "scripts": {
-            "report-weight": "weighin < path/to/your/build.js"
+            "report-weight": "weighin < path/to/your/build.min.js"
         }
 
 Then add to your `.travis.yml`:
