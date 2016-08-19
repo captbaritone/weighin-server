@@ -5,7 +5,10 @@ function comment(owner, repo, pull, message) {
     var gh = new GitHub({
         token: process.env.GITHUB_TOKEN
     });
-    gh.getIssues(owner, repo).createIssueComment(pull, message);
+    console.log('commenting:', owner, repo, pull, message);
+    gh.getIssues(owner, repo).createIssueComment(pull, message, function(error, result, request) {
+        // TODO: Handle errors
+    });
 }
 
 module.exports = {
