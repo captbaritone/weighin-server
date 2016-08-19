@@ -83,6 +83,16 @@ app.get('/:owner/:repo/master.svg', function (req, res) {
   });
 })
 
+app.get('/api/v0/:owner/:repo/pulls/:pull', function (req, res) {
+  var key = getKey(req.params.owner, req.params.repo, req.params.pull);
+  client.get(key, function(err, value) {
+    var body = {
+        weight: value
+    };
+    res.send(body);
+  });
+})
+
 app.post('/api/v0/:owner/:repo/pulls/:pull', jsonParser, function (req, res) {
   var key = getKey(req.params.owner, req.params.repo, req.params.pull);
   client.set(key, req.body.weight);
