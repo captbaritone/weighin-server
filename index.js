@@ -57,7 +57,6 @@ app.post('/api/v0/:owner/:repo/master', jsonParser, function (req, res) {
   res.send('OK')
 })
 
-/*
 app.get('/api/v0/:owner/:repo/master', function (req, res) {
   var key = getKey(req.params.owner, req.params.repo);
   client.get(key, function(err, value) {
@@ -67,7 +66,6 @@ app.get('/api/v0/:owner/:repo/master', function (req, res) {
     res.send(body);
   });
 })
-*/
 
 app.get('/:owner/:repo/master.svg', function (req, res) {
   var key = getKey(req.params.owner, req.params.repo);
